@@ -104,19 +104,19 @@
             </figure>
             <p>
               In the example above, it begins to get easier to reason about how
-              allotment (how much a household gets per month in SNAP benefits) is
-              calculated. You can know that allotment uses the eligibility category,
-              unfloored allotment, which itself is calculated using the max allotment
-              and expected contribution, as well as the household size and minimum
-              allotment.
+              "allotment" (how much a household gets per month in SNAP benefits) is
+              calculated. You can know that "allotment" uses the "eligibility category",
+              "unfloored allotment", which itself is calculated using the "max allotment"
+              and "expected contribution", as well as the "household size" and "minimum
+              allotment".
             </p>
             <p>
               Another feature of our visualizer is that you can enter values for
               individual facts and see how the rules would use those values in real
               time (the values in green). For example, someone who is familiar with
-              the SNAP policy could easily check that the allotment for a household
+              the SNAP policy could easily check that the "allotment" for a household
               is $245 given that the household qualifies under expanded categorical
-              eligibility, with a household size of 2, and an expected contribution
+              eligibility, with a "household size" of 2, and an "expected contribution"
               of $300. So instead of having to create a whole profile that generates
               these criteria (our SNAP implementation has 159 inputs), a
               tester/engineer could provide just the inputs that they need to test
@@ -295,8 +295,8 @@
           <article>
             <p>
               My SNAP implementation has 159 inputs (Direct File has 602 inputs)
-              that range from age and income amount to was in foster care on 18th
-              birthday (used for work requirements) and sponsor household size (used
+              that range from "age" and "income amount" to "was in foster care on 18th
+              birthday" (used for work requirements) and "sponsor household size" (used
               to determine the amount of income from a sponsor that gets applied to
               the household). On top of that, some of the inputs need to be input per
               member (75 inputs), income (12), or expense (14) (Direct File has 127 inputs for each W2, 58
@@ -308,21 +308,21 @@
               single one of those inputs every single time you filled out a SNAP
               application. The solution is to not ask questions that you do not need
               to ask. For example, you do not need to ask a user for their sponsor
-              household size if they are a US citizen. Traditionally, you would have
+              "sponsor household size" if they are a US citizen. Traditionally, you would have
               to hard code each of these cases into the form flow, but that is still
               a lot of work to add each of the branches given the amount of inputs.
             </p>
             <p>
               Fact Graph's solution is to determine which inputs are missing given a
               set of incomplete inputs. For example, here is the Fact Graph code for
-              the is elderly or person with disability fact.
+              the "is elderly or person with disability" fact.
             </p>
             <pre><code>&lt;Any&gt;
   &lt;Dependency path="../isElderly" /&gt;
   &lt;Dependency path="../isPersonWithDisability" /&gt;
 &lt;/Any&gt;</code></pre>
             <p>
-              If a person is elderly, then we already know that the "is elderly or a
+              If a person is "elderly", then we already know that the "is elderly or a
               person with disability" fact will evaluate to true even if the "is
               person with disability" fact is false. Therefore we do not need to ask
               any of the questions that are used by "is person with disability"
@@ -401,19 +401,19 @@
             <p>
               Most rules engines need to support the concept of a list. Whether it
               is a list of household members, a list of incomes, or a list of
-              expenses. Each list item also has multiple inputs (like age and has
-              disability for members). Imagine the following rule that we need to add.
+              expenses. Each list item also has multiple inputs (like "age" and "has
+              disability" for members). Imagine the following rule that we need to add.
             </p>
             <blockquote>
-              The household doesn't need to meet the resource test if they have
-              anyone who is elderly or disabled.
+              The household doesn't need to meet the "resource test" if they have
+              anyone who is "elderly or disabled".
             </blockquote>
             <p>
               To model this you need 2 new nodes. You could do this as one, but for
               the sake of simplicity I did not want to come up with a scenario where
               you would need to split this into 2 parts. You need a node that checks
-              if each member is elderly or disabled, and you need a node that uses
-              the new is elderly or disabled node and checks if any of them are true.
+              if each member is "elderly or disabled", and you need a node that uses
+              the new "is elderly or disabled" node and checks if any of them are true.
               When implementing this in DMN it would look something like this.
             </p>
             <pre><code>// Decision: elderlyOrDisabledMembers
@@ -532,7 +532,7 @@ or resourcesWithinLimit</code></pre>
               relevant for screening. For example, if you were making a screener,
               you likely would not want to ask the user about their deemed sponsor
               income, so you could remove that branch of the graph by overriding
-              where the deemed sponsor income is used to not include it anymore.
+              where the "deemed sponsor income" is used to not include it anymore.
             </p>
             <pre><code>&lt;Add&gt;
   &lt;CollectionSum&gt;
@@ -644,15 +644,15 @@ or resourcesWithinLimit</code></pre>
 &lt;/GreaterThan&gt;</code></pre>
             <p>
               The way that these collections are set up is that we have members who
-              have age and is part of household fields. We also have a collection of
-              caregiver relationships which have caregiver id, child id, and is
-              parent fields. Caregiver id is an id to a member. Child id is also an
-              id to a member. Is parent says whether the caregiver is a parent to
+              have "age" and "is part of household" fields. We also have a collection of
+              "caregiver relationships" which have "caregiver id", "child id", and "is
+              parent" fields. "Caregiver id" is an id to a member. "Child id" is also an
+              id to a member. "Is parent" says whether the caregiver is a parent to
               the child.
             </p>
             <p>We filter the caregiver relationships to determine if there is one caregiver who meets the following criteria for every household member:</p>
             <ul>
-              <li>The caregiver id needs to match the member id.</li>
+              <li>The "caregiver id" needs to match the "member id".</li>
               <li>The child needs to be younger than 12 years old.</li>
               <li>The relationship needs to be a child parent relationship.</li>
               <li>There can be no one else in the household who is also a parent of this child (completed using another filter).</li>
