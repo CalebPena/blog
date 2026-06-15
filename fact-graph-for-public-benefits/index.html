@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fact Graph for Public Benefits</title>
+    <meta
+      name="description"
+      content="A first blog post about Fact Graph, rules engines, public benefits eligibility, and features for maintainable policy rules."
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <header class="hero section section-0">
+      <h1>Fact Graph for Public Benefits</h1>
+      <nav class="toc" aria-label="Article sections">
+        <a href="#intro">Intro</a>
+        <a href="#scoped-rules">Scoped Rules</a>
+        <a href="#policy-linking">Policy Linking</a>
+        <a href="#xml">XML</a>
+        <a href="#missing-inputs">Missing Inputs</a>
+        <a href="#periods">Periods</a>
+        <a href="#collections">Collections</a>
+        <a href="#plugins">Plugins</a>
+        <a href="#dependency-scope">Dependency Scope</a>
+        <a href="#circular-logic">Circular Logic</a>
+        <a href="#new-engine">New Engine</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="section section-1 article-block" id="intro">
+        <div class="content-grid">
+          <aside class="section-label">Intro</aside>
+          <article>
+            <p>
+              Over the past 6 months, my team and I have been exploring rules
+              engines in the context of determining eligibility for public benefits
+              like SNAP, Medicaid, and WIC.
+              Our goal was to make rules as maintainable as possible. To achieve
+              this we built a visualizer that allows you to see how all the rules
+              interact with each other. I have previous experience with
+              PolicyEngine (a fork of OpenFisca). We also explored DMN, but we
+              eventually settled on building a prototype in Fact Graph.
+            </p>
+            <p>
+              Fact Graph was developed by the IRS as part of Direct File. While
+              using Direct File I fell in love with some features, added some
+              features, and had ideas for features. This blog is a list of what
+              those features are, as well as some opinions about them. The features
+              are ordered in such a way that the features where you need to know the
+              least about Fact Graph are at the top, and as you go down the features
+              get more in the weeds.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-2 article-block" id="scoped-rules">
+        <div class="content-grid">
+          <aside class="section-label">Scoped rules</aside>
+          <article>
+            <p>
+              The core concept of Fact Graph is that there are facts that each
+              represent a part of a calculation. There are writable facts and there
+              are derived facts. Writable facts are inputs provided by the user.
+              Derived facts take other facts (both writable and derived) and produce
+              a new value. Each derived fact has its own logic that it uses to
+              calculate its own value.
+            </p>
+            <p>
+              These facts create a tree where you can see each fact, their
+              dependencies, and their dependencies' dependencies. Below is an
+              implementation of SNAP with all of its writable and derived facts.
+            </p>
+            <figure class="image-placeholder">
+              <div>Image coming soon</div>
+              <figcaption>Full SNAP fact graph visualization.</figcaption>
+            </figure>
+            <p>
+              As you can see rules can get pretty complicated (The Direct File graph
+              takes up 3 additional screen lengths on my computer to get to the
+              bottom. When we first tried to load it we had to make performance
+              improvements to the graph to make it interactable). Breaking the engine
+              into facts makes the engine easier to understand because you can focus
+              on one part of the calculation. The image below shows how the graph
+              looks when you focus in on just one part of the graph, in this case
+              the allotment:
+            </p>
+            <figure class="image-placeholder">
+              <div>Image coming soon</div>
+              <figcaption>Focused allotment graph with live values.</figcaption>
+            </figure>
+            <p>
+              In the example above, it begins to get easier to reason about how
+              allotment (how much a household gets per month in SNAP benefits) is
+              calculated. You can know that allotment uses the eligibility category,
+              unfloored allotment, which itself is calculated using the max allotment
+              and expected contribution, as well as the household size and minimum
+              allotment.
+            </p>
+            <p>
+              Another feature of our visualizer is that you can enter values for
+              individual facts and see how the rules would use those values in real
+              time (the values in green). For example, someone who is familiar with
+              the SNAP policy could easily check that the allotment for a household
+              is $245 given that the household qualifies under expanded categorical
+              eligibility, with a household size of 2, and an expected contribution
+              of $300. So instead of having to create a whole profile that generates
+              these criteria (our SNAP implementation has 159 inputs), a
+              tester/engineer could provide just the inputs that they need to test
+              the piece of the graph that they are validating.
+            </p>
+
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-3 article-block" id="policy-linking">
+        <div class="content-grid">
+          <aside class="section-label">Policy linking</aside>
+          <article>
+            <p>
+              A problem with maintaining large rulesets over time is that you often
+              forget why things were implemented the way that they were. In the best
+              case scenario, you need to go through your previous development
+              tickets to find out why something was implemented the way that it was,
+              wasting time and energy. In the worst case you remove important code
+              that supported an edge case and your engine has a critical bug.
+            </p>
+            <p>
+              For our rules visualizer, we created a way for policy to be linked
+              directly to individual facts. Here is an example of the sources for
+              the allotment fact shown above.
+            </p>
+            <figure class="image-placeholder">
+              <div>Image coming soon</div>
+              <figcaption>Policy source cards linked to the allotment fact.</figcaption>
+            </figure>
+            <p>
+              Having the sources attached directly to the policy allows both
+              engineers and testers to understand how facts are supposed to work,
+              often in a more readable way than the code alone. The sources also
+              link back to the policy (button on the top right of the source cards)
+              so that you can see how the source interacts with the rest of the
+              policy. This also allows you to go in reverse where if you want to see
+              where a certain policy is implemented in the graph, you can start with
+              the policy and see what facts reference it.
+            </p>
+            <p>
+              One caveat is that oftentimes linking up all the documentation like
+              this takes a lot of time and effort. However, with AI it was easy to
+              link the documentation as I built the graph by providing the AI with
+              the source (I had a shortcut to spawn AI agents with the attached
+              source in the rules visualizer UI), and having it implement the rules
+              from the source (I oftentimes could just attach the source with a
+              message as simple as "add"). This not only resulted in all the sources
+              being attached to their relevant facts, but it often made development
+              easier because the AI already had the context about what I was trying
+              to add.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-4 article-block" id="xml">
+        <div class="content-grid">
+          <aside class="section-label">XML</aside>
+          <article>
+            <p>
+              Fact Graph uses a custom language that you write in XML to configure
+              and run a given rule set. Like everyone I was initially skeptical
+              about writing what is essentially code in XML. Here is an example
+              from the allotment fact that we have been using.
+            </p>
+            <pre><code>&lt;Floor&gt;
+  &lt;Switch&gt;
+    &lt;Case&gt;
+      &lt;When&gt;
+        &lt;Equal&gt;
+          &lt;Left&gt;&lt;Dependency path="/eligibilityCategory" /&gt;&lt;/Left&gt;
+          &lt;Right&gt;&lt;Enum optionsPath="/eligibilityCategoryOptions"&gt;Ineligible&lt;/Enum&gt;&lt;/Right&gt;
+        &lt;/Equal&gt;
+      &lt;/When&gt;
+      &lt;Then&gt;&lt;Dollar&gt;0&lt;/Dollar&gt;&lt;/Then&gt;
+    &lt;/Case&gt;
+    &lt;Case&gt;
+      &lt;When&gt;
+        &lt;LessThanOrEqual&gt;
+          &lt;Left&gt;&lt;Dependency path="/unflooredAllotment" /&gt;&lt;/Left&gt;
+          &lt;Right&gt;&lt;Dollar&gt;0&lt;/Dollar&gt;&lt;/Right&gt;
+        &lt;/LessThanOrEqual&gt;
+      &lt;/When&gt;
+      &lt;Then&gt;&lt;Dollar&gt;0&lt;/Dollar&gt;&lt;/Then&gt;
+    &lt;/Case&gt;
+    &lt;Case&gt;
+      &lt;When&gt;
+        &lt;LessThanOrEqual&gt;
+          &lt;Left&gt;&lt;Dependency path="/householdSize" /&gt;&lt;/Left&gt;
+          &lt;Right&gt;&lt;Int&gt;2&lt;/Int&gt;&lt;/Right&gt;
+        &lt;/LessThanOrEqual&gt;
+      &lt;/When&gt;
+      &lt;Then&gt;
+        &lt;GreaterOf&gt;
+          &lt;Dependency path="/unflooredAllotment" /&gt;
+          &lt;Dependency path="/minimumAllotment" /&gt;
+        &lt;/GreaterOf&gt;
+      &lt;/Then&gt;
+    &lt;/Case&gt;
+    &lt;Case&gt;
+      &lt;When&gt;&lt;True /&gt;&lt;/When&gt;
+      &lt;Then&gt;&lt;Dependency path="/unflooredAllotment" /&gt;&lt;/Then&gt;
+    &lt;/Case&gt;
+  &lt;/Switch&gt;
+&lt;/Floor&gt;</code></pre>
+            <p>
+              The XML is quite verbose, but it also provides a lot of structure.
+              Each fact in the fact graph needs to take a set of inputs,
+              <code>&lt;Dependency /&gt;</code>, and turn it into a singular value.
+              Here is what the above would look like if you wrote it as a single
+              expression in Python.
+            </p>
+            <pre><code>floor(
+    0 if eligibilityCategory == "Ineligible"
+    else 0 if unflooredAllotment &lt;= 0
+    else max(unflooredAllotment, minimumAllotment) if householdSize &lt;= 2
+    else unflooredAllotment
+)</code></pre>
+            <p>
+              It looks a lot cleaner until you try to figure out which value
+              belongs to which condition. Additionally there is a confusing mix of
+              functions (like <code>floor()</code> and <code>max()</code>), words
+              (<code>if</code> and <code>else</code>), and symbols (<code>==</code>
+              and <code>&lt;=</code>) which could confuse someone who is not familiar
+              with Python. In XML however, everything works the same way. To floor a
+              value you use <code>&lt;Floor&gt;</code>, which is the same syntax as if you
+              want to check if one value is less than or equal to another where you
+              would use <code>&lt;LessThanOrEqual&gt;</code> (with the exception being when
+              you need to reference a dependency where you have to provide a path
+              attribute).
+            </p>
+            <p>
+              Even so, I still would prefer to write in a Python-like syntax (for
+              example FEEL from DMN). I don't want to have to type
+              <code>&lt;Add&gt;&lt;/Add&gt;</code> instead of <code>+</code> every time I need
+              to add something. I also don't think that it makes that much of a
+              difference in a less-technical user's ability to read and understand
+              it. However, there are two things working in XML's favor that would
+              make it so that I would not change it.
+            </p>
+            <p>
+              First, I didn't have to type out any XML because AI did all the work.
+              Second, XML was super easy to parse and perform static analysis on.
+              For example it was really easy to get all of the dependencies of each
+              fact, something that would be nearly impossible with a programming
+              language like Python (I did have some success with getting dependencies
+              at runtime with OpenFisca), and it would take a lot more work to parse
+              out for a FEEL-like syntax. I also like that there is really only one
+              way to do anything, which would not be true if you didn't use a DSL.
+            </p>
+            <p>
+              If you are interested in learning more about the advantages of XML in
+              Fact Graph I would recommend reading <cite>XML is a Cheap DSL</cite>
+              by Alexander Petros, and if you are interested in hearing more counter
+              points, you can check out the Reddit thread about that article.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-5 article-block" id="missing-inputs">
+        <div class="content-grid">
+          <aside class="section-label">Missing inputs</aside>
+          <article>
+            <p>
+              My SNAP implementation has 159 inputs (Direct File has 602 inputs)
+              that range from age and income amount to was in foster care on 18th
+              birthday (used for work requirements) and sponsor household size (used
+              to determine the amount of income from a sponsor that gets applied to
+              the household). On top of that, some of the inputs need to be input per
+              member (75 inputs), income (12), or expense (14) (Direct File has 127 inputs for each W2, 58
+              for each household member, and 422 total across its various other
+              collections).
+            </p>
+            <p>
+              It would be a pretty miserable experience to have to input every
+              single one of those inputs every single time you filled out a SNAP
+              application. The solution is to not ask questions that you do not need
+              to ask. For example, you do not need to ask a user for their sponsor
+              household size if they are a US citizen. Traditionally, you would have
+              to hard code each of these cases into the form flow, but that is still
+              a lot of work to add each of the branches given the amount of inputs.
+            </p>
+            <p>
+              Fact Graph's solution is to determine which inputs are missing given a
+              set of incomplete inputs. For example, here is the Fact Graph code for
+              the is elderly or person with disability fact.
+            </p>
+            <pre><code>&lt;Any&gt;
+  &lt;Dependency path="../isElderly" /&gt;
+  &lt;Dependency path="../isPersonWithDisability" /&gt;
+&lt;/Any&gt;</code></pre>
+            <p>
+              If a person is elderly, then we already know that the "is elderly or a
+              person with disability" fact will evaluate to true even if the "is
+              person with disability" fact is false. Therefore we do not need to ask
+              any of the questions that are used by "is person with disability"
+              (unless those inputs are used elsewhere). There are similar tricks that
+              you can do with <code>&lt;All&gt;</code> and <code>&lt;Switch&gt;</code>.
+            </p>
+            <p>
+              This could theoretically be used to generate a question flow all by
+              itself by checking the conditions in order (ask for the inputs for
+              "is elderly" before "is person with disability"). One issue with this
+              is that the question flow becomes tightly coupled to the order that
+              conditions are checked (if you swap the order of "is elderly" and "is
+              person with disability" then the "is person with disability" questions
+              get asked first). Another issue is that you lose control of which
+              inputs are next to each other (you probably want to ask about a user's
+              age, and if they are pregnant close to each other, but they could end
+              up being asked at completely different parts of the flow. To get around
+              this you still need to hard code a flow, but that flow can be informed
+              by the intermediate values of the graph (for example skipping the
+              disability questions if the engine says that it is not required).
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-6 article-block" id="periods">
+        <div class="content-grid">
+          <aside class="section-label">Periods</aside>
+          <article>
+            <p>
+              Policy changes, and the rules need to change with it. It is easy to
+              manage updates to the graph as policy changes by just maintaining one
+              version of the graph. However, imagine a scenario where you need to
+              support filing taxes for the current year, but you also need to
+              support filing taxes for the previous year for people who have not
+              filed yet. One solution is to maintain 2 versions of the graph. You
+              would pin a version for the previous year, and then make the changes
+              you need to for the current year from the previous year and have that
+              as a separate version. This has one minor pain point where if you find
+              a bug that affects both versions, you need to make 2 (or however many
+              versions you maintain) changes.
+            </p>
+            <p>
+              One solution is to combine both versions into one graph, pass the
+              calculation year as an input, and then use a <code>&lt;Switch&gt;</code> to
+              change the logic based on the execution year. This works, but there
+              are going to be a lot of unnecessary <code>&lt;Switch&gt;</code>
+              statements. Taking inspiration from OpenFisca, it would be convenient
+              to have a method built into the standard to handle this more
+              gracefully. In Policy Engine here is the config file for the federal
+              poverty level, FPL, for one person.
+            </p>
+            <pre><code>first_person:
+  CONTIGUOUS_US:
+    1992-01-01: 6_810
+    2011-01-01: 10_890
+    ...
+    2025-01-01: 15_650
+    2026-01-01: 15_960</code></pre>
+            <p>
+              Here each year has its own value for the FPL for one person. In 2025
+              the FPL for one person was $15,650, and in 2026 it increased to
+              $15,960. A similar idea could be implemented in Fact Graph by using a
+              new <code>&lt;Period&gt;</code> tag.
+            </p>
+            <pre><code>&lt;Period year="2025"&gt;&lt;Dollar&gt;15650&lt;/Dollar&gt;&lt;/Period&gt;
+&lt;Period year="2026"&gt;&lt;Dollar&gt;15960&lt;/Dollar&gt;&lt;/Period&gt;</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-7 article-block" id="collections">
+        <div class="content-grid">
+          <aside class="section-label">Collections</aside>
+          <article>
+            <p>
+              Most rules engines need to support the concept of a list. Whether it
+              is a list of household members, a list of incomes, or a list of
+              expenses. Each list item also has multiple inputs (like age and has
+              disability for members). Imagine the following rule that we need to add.
+            </p>
+            <blockquote>
+              The household doesn't need to meet the resource test if they have
+              anyone who is elderly or disabled.
+            </blockquote>
+            <p>
+              To model this you need 2 new nodes. You could do this as one, but for
+              the sake of simplicity I did not want to come up with a scenario where
+              you would need to split this into 2 parts. You need a node that checks
+              if each member is elderly or disabled, and you need a node that uses
+              the new is elderly or disabled node and checks if any of them are true.
+              When implementing this in DMN it would look something like this.
+            </p>
+            <pre><code>// Decision: elderlyOrDisabledMembers
+for member in members
+return member.isElderly or member.isDisabled
+
+// Decision: meetsResourceTest
+(some result in elderlyOrDisabledMembers satisfies result)
+or resourcesWithinLimit</code></pre>
+            <p>
+              It is already getting hard to read, and it gets even more difficult
+              when you need to use "is elderly or disabled member" alongside other
+              member level fields, for example if you needed to use it alongside
+              hours worked for work requirements. The best solution would be to
+              split all of the member level calculations into their own DMN graph,
+              and pass the results to the household level graph.
+            </p>
+            <p>
+              Fact Graph solves this in a better way. It allows the user to define
+              additional member level derived fields. In the example above that
+              would look like:
+            </p>
+            <pre><code>&lt;Any&gt;
+  &lt;Dependency path="../isElderly" /&gt;
+  &lt;Dependency path="../isPersonWithDisability" /&gt;
+&lt;/Any&gt;</code></pre>
+            <p>
+              The <code>../factName</code> path syntax lets you access other facts,
+              both writable and derived, for that particular member. That means that
+              you can then use the "is elderly or disabled fact" in a member level
+              meets work requirement by simply referencing it with
+              <code>&lt;Dependency path="../isElderlyOrDisabled" /&gt;</code>. Then when
+              you need to aggregate all of the members at a household level you can
+              do that using one of the aggregation tags (admittedly more verbose than
+              the DMN version).
+            </p>
+            <pre><code>&lt;GreaterThan&gt;
+  &lt;Left&gt;
+    &lt;Count&gt;
+      &lt;Dependency path="/members/*/isElderlyOrPersonWithDisability" /&gt;
+    &lt;/Count&gt;
+  &lt;/Left&gt;
+  &lt;Right&gt;&lt;Int&gt;0&lt;/Int&gt;&lt;/Right&gt;
+&lt;/GreaterThan&gt;</code></pre>
+            <p>
+              Another feature of collections that Fact Graph has that I found out
+              about while researching for this blog that I wish I knew about while
+              building our SNAP implementation, is called aliases. During my
+              implementation of SNAP, I had to use the following pattern in multiple
+              places.
+            </p>
+            <pre><code>&lt;CollectionSum&gt;
+  &lt;Switch&gt;
+    &lt;Case&gt;
+      &lt;When&gt;&lt;Dependency path="/members/*/isPartOfHousehold" /&gt;&lt;/When&gt;
+      &lt;Then&gt;&lt;Dependency path="/members/*/grossIncome" /&gt;&lt;/Then&gt;
+    &lt;/Case&gt;
+    &lt;Case&gt;
+      &lt;When&gt;&lt;True /&gt;&lt;/When&gt;
+      &lt;Then&gt;&lt;Dollar&gt;0&lt;/Dollar&gt;&lt;/Then&gt;
+    &lt;/Case&gt;
+  &lt;/Switch&gt;
+&lt;/CollectionSum&gt;</code></pre>
+            <p>
+              An alias is just a filtered subset of another collection. For example,
+              you could make an alias for household members that is all of the
+              members that meet the criteria for "is part of household". With an
+              alias that would turn the above code into this.
+            </p>
+            <pre><code>&lt;CollectionSum&gt;
+  &lt;Dependency path="/householdMembers/*/grossIncome" /&gt;
+&lt;/CollectionSum&gt;</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-8 article-block" id="plugins">
+        <div class="content-grid">
+          <aside class="section-label">Plugins</aside>
+          <article>
+            <p>
+              SNAP rules are defined at a federal level, but each state is given
+              some liberty to change certain rules. For example, the standard utility
+              allowance, SUA, varies from state to state. In Colorado the SUA is
+              $594 but in California it is $663. A lot of time and effort could be
+              saved if these states could share a rules engine, and make only the
+              changes that are different for each state.
+            </p>
+            <p>
+              This problem is very similar to the problem of managing multiple graphs
+              for different time periods at the same time, and we can solve it in a
+              similar manner by allowing users to override certain parts of the graph.
+              Here is an example of how it could look.
+            </p>
+            <pre><code>&lt;!-- federal.xml --&gt;
+&lt;Fact path="/heatingCoolingUtilityAllowance"&gt;
+  &lt;Derived&gt;&lt;NotImplemented/&gt;&lt;/Derived&gt;
+&lt;/Fact&gt;
+
+&lt;!-- colorado.xml --&gt;
+&lt;Meta inherits="federal.xml" /&gt;
+&lt;Fact path="/heatingCoolingUtilityAllowance"&gt;
+  &lt;Derived&gt;&lt;Dollar&gt;594&lt;/Dollar&gt;&lt;/Derived&gt;
+&lt;/Fact&gt;
+
+&lt;!-- california.xml --&gt;
+&lt;Meta inherits="federal.xml" /&gt;
+&lt;Fact path="/heatingCoolingUtilityAllowance"&gt;
+  &lt;Derived&gt;&lt;Dollar&gt;663&lt;/Dollar&gt;&lt;/Derived&gt;
+&lt;/Fact&gt;</code></pre>
+            <p>
+              By overriding a base graph, we can easily add our custom configuration
+              per state. You could take this a step further, where if you want to
+              create a screener for SNAP in Colorado, you could inherit from the
+              colorado.xml and override whole branches of the graph that are not
+              relevant for screening. For example, if you were making a screener,
+              you likely would not want to ask the user about their deemed sponsor
+              income, so you could remove that branch of the graph by overriding
+              where the deemed sponsor income is used to not include it anymore.
+            </p>
+            <pre><code>&lt;Add&gt;
+  &lt;CollectionSum&gt;
+    &lt;Switch&gt;
+      &lt;Case&gt;
+        &lt;When&gt;
+          &lt;All&gt;
+            &lt;Equal&gt;
+              &lt;Left&gt;&lt;Dependency path="/incomes/*/memberId" /&gt;&lt;/Left&gt;
+              &lt;Right&gt;&lt;Dependency path=".." /&gt;&lt;/Right&gt;
+            &lt;/Equal&gt;
+            &lt;Dependency path="/incomes/*/isUnearned" /&gt;
+
+            &lt;!-- REMOVE THIS IN THE SCREENER GRAPH --&gt;
+            &lt;Not&gt;
+              &lt;Equal&gt;
+                &lt;Left&gt;&lt;Dependency path="/incomes/*/type" /&gt;&lt;/Left&gt;
+                &lt;Right&gt;&lt;Enum optionsPath="/incomeSourceOptions"&gt;SponsorPayments&lt;/Enum&gt;&lt;/Right&gt;
+              &lt;/Equal&gt;
+            &lt;/Not&gt;
+            &lt;!-- END REMOVE THIS IN THE SCREENER GRAPH --&gt;
+
+          &lt;/All&gt;
+        &lt;/When&gt;
+        &lt;Then&gt;&lt;Dependency path="/incomes/*/monthlyAmount" /&gt;&lt;/Then&gt;
+      &lt;/Case&gt;
+      &lt;Case&gt;
+        &lt;When&gt;&lt;True /&gt;&lt;/When&gt;
+        &lt;Then&gt;&lt;Dollar&gt;0&lt;/Dollar&gt;&lt;/Then&gt;
+      &lt;/Case&gt;
+    &lt;/Switch&gt;
+  &lt;/CollectionSum&gt;
+
+  &lt;!-- REMOVE THIS IN THE SCREENER GRAPH --&gt;
+  &lt;Dependency path="../sponsorIncome" /&gt;
+  &lt;!-- END REMOVE THIS IN THE SCREENER GRAPH --&gt;
+&lt;/Add&gt;</code></pre>
+            <p>
+              Coupling graphs like this does present a new challenge in maintaining
+              such a system. One change in the parent graph could have unintended
+              consequences to the state graphs that inherit from it. However, the
+              extra effort that it takes to prevent the new bugs that are created
+              from inheritance is likely to be significantly less than the time it
+              saves in having to maintain 50 different SNAP rules engines.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-9 article-block" id="dependency-scope">
+        <div class="content-grid">
+          <aside class="section-label">Dependency scope</aside>
+          <article>
+            <p>
+              The following 2 sections are changes that we had to make to the Fact
+              Graph engine to be able to run the SNAP rules. Without these changes
+              we would not be able to fully model the rules without calculating
+              certain parts externally and passing them in.
+            </p>
+            <p>
+              In our SNAP implementation we have a collection that maps the
+              relationship between children and caregivers. Here is a fact from the
+              member collection that answers the question of "is this person the only
+              caregiver for a child under 12" (used to determine if a student can
+              qualify for SNAP):
+            </p>
+            <pre><code>&lt;GreaterThan&gt;
+  &lt;Left&gt;
+    &lt;CollectionSize&gt;
+      &lt;Filter path="/caregiverRelationships"&gt;
+        &lt;All&gt;
+          &lt;Equal&gt;
+            &lt;Left&gt;&lt;Dependency path="caregiverId" /&gt;&lt;/Left&gt;
+            &lt;Right&gt;&lt;Dependency path="^" /&gt;&lt;/Right&gt;
+          &lt;/Equal&gt;
+          &lt;LessThan&gt;
+            &lt;Left&gt;&lt;Dependency path="dependentId/age" /&gt;&lt;/Left&gt;
+            &lt;Right&gt;&lt;Dependency path="/studentExemptionDependentChildAgeLimit" /&gt;&lt;/Right&gt;
+          &lt;/LessThan&gt;
+          &lt;Dependency path="isParent" /&gt;
+          &lt;Equal&gt;
+            &lt;Left&gt;
+              &lt;CollectionSize&gt;
+                &lt;Filter path="/caregiverRelationships"&gt;
+                  &lt;All&gt;
+                    &lt;Equal&gt;
+                      &lt;Left&gt;&lt;Dependency path="dependentId" /&gt;&lt;/Left&gt;
+                      &lt;Right&gt;&lt;Dependency path="^/dependentId" /&gt;&lt;/Right&gt;
+                    &lt;/Equal&gt;
+                    &lt;Dependency path="isParent" /&gt;
+                    &lt;Any&gt;
+                      &lt;Equal&gt;
+                        &lt;Left&gt;&lt;Dependency path="caregiverId" /&gt;&lt;/Left&gt;
+                        &lt;Right&gt;&lt;Dependency path="^/caregiverId" /&gt;&lt;/Right&gt;
+                      &lt;/Equal&gt;
+                      &lt;Dependency path="caregiverId/isPartOfHousehold" /&gt;
+                    &lt;/Any&gt;
+                  &lt;/All&gt;
+                &lt;/Filter&gt;
+              &lt;/CollectionSize&gt;
+            &lt;/Left&gt;
+            &lt;Right&gt;&lt;Int&gt;1&lt;/Int&gt;&lt;/Right&gt;
+          &lt;/Equal&gt;
+        &lt;/All&gt;
+      &lt;/Filter&gt;
+    &lt;/CollectionSize&gt;
+  &lt;/Left&gt;
+  &lt;Right&gt;&lt;Int&gt;0&lt;/Int&gt;&lt;/Right&gt;
+&lt;/GreaterThan&gt;</code></pre>
+            <p>
+              The way that these collections are set up is that we have members who
+              have age and is part of household fields. We also have a collection of
+              caregiver relationships which have caregiver id, child id, and is
+              parent fields. Caregiver id is an id to a member. Child id is also an
+              id to a member. Is parent says whether the caregiver is a parent to
+              the child.
+            </p>
+            <p>We filter the caregiver relationships to determine if there is one caregiver who meets the following criteria for every household member:</p>
+            <ul>
+              <li>The caregiver id needs to match the member id.</li>
+              <li>The child needs to be younger than 12 years old.</li>
+              <li>The relationship needs to be a child parent relationship.</li>
+              <li>There can be no one else in the household who is also a parent of this child (completed using another filter).</li>
+            </ul>
+            <p>
+              The way that filters worked previously made it impossible to answer
+              the first condition. When you are inside a filter the way the paths
+              resolve changes so that relative paths resolve to the scope of the
+              collection item that you are filtering. For example when you call
+              <code>&lt;Dependency path="isParent" /&gt;</code>, "is parent" is giving
+              you the value on the caregiver relationship collection that you are
+              determining if it needs to be filtered out or not. The issue is that
+              there was no syntax to refer back to the original fact, in this case
+              the member. This means that if you want to check if the "caregiver id"
+              matches the original member, there is no way to do that. Our solution
+              was to add a syntax to reference the parent scope inside of a filter.
+            </p>
+            <pre><code>&lt;Equal&gt;
+   &lt;Left&gt;&lt;Dependency path="caregiverId" /&gt;&lt;/Left&gt;
+   &lt;Right&gt;&lt;Dependency path="^" /&gt;&lt;/Right&gt;
+&lt;/Equal&gt;</code></pre>
+            <p>
+              We added the <code>^</code> to represent the parent scope. You can use
+              <code>^^</code> to represent 2 scopes above although we did not have a
+              use case for this. In this situation <code>path="^"</code> simply
+              means the member who we are trying to determine if they are a single
+              parent. Additionally we have a filter inside of a filter in this
+              example, and they have the following.
+            </p>
+            <pre><code>&lt;Equal&gt;
+  &lt;Left&gt;&lt;Dependency path="dependentId" /&gt;&lt;/Left&gt;
+  &lt;Right&gt;&lt;Dependency path="^/dependentId" /&gt;&lt;/Right&gt;
+&lt;/Equal&gt;</code></pre>
+            <p>
+              Because this code is in a nested filter it is asking if the caregiver
+              relationship item from the parent filter has the same "dependent id"
+              as this item from the nested caregiver relationship filter (in order to
+              find out if this child has any other parents).
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-10 article-block" id="circular-logic">
+        <div class="content-grid">
+          <aside class="section-label">Circular logic</aside>
+          <article>
+            <p>
+              The SNAP rules determine if a member is required included in the
+              household as follows: parents of children under the age of 21 (who also
+              live together) must be in the same household, and spouses must be in
+              the same household.
+            </p>
+            <p>
+              Imagine you have a household with the following members Adam, Ben, and
+              Chloe. Adam is the father of Ben who is 20 years old. Ben and Chloe
+              are married. If Adam applies for SNAP, Ben is required to be in the
+              same household as Adam because Adam is Ben's father, and Chloe is
+              required to be in the same household as Ben because Chloe is the spouse
+              of Ben. There is a recursive logic where you being in the household
+              depends on your parent, child, or spouse also being part of the
+              household (or you being the head of household in the case of Adam).
+            </p>
+            <p>
+              At first this seems like an impossible thing to accomplish in Fact
+              Graph because if nodes depend on themselves (in this case the being in
+              the household depending on being in the household) they will create a
+              circular loop that will never resolve. However, there is one feature of
+              Fact Graph that makes this not completely impossible. Because Fact
+              Graph works by evaluating one member at a time (as opposed to running
+              them all at once like in OpenFisca), we can wait to calculate if
+              certain members are in the household until it can be determined if one
+              the other members (like their parent, child, or spouse) is part of the
+              household either by being the head of household, or being related
+              through some chain to the head of household (I came up with this idea
+              in the shower. If you are interested in the history of showers and
+              Fact Graph check out Alex Mark's substack article). Even though Fact
+              Graph can theoretically handle this, we had to make some changes to
+              the engine around static type checking, and the actual runtime to get
+              this fully working.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-11 article-block" id="new-engine">
+        <div class="content-grid">
+          <aside class="section-label">New engine</aside>
+          <article>
+            <p>
+              The existing Fact Graph engine is written in Scala, and it uses a
+              library to transpile to JavaScript. Another advantage to writing a
+              rules engine in XML is that if it is too slow, you can rewrite the
+              interpreter in another, faster language. We did run into an issue where
+              the transpiled JS from the original Scala engine was too slow for our
+              SNAP graph (we were trying to run a simulation with a couple thousand
+              scenarios and it was taking seconds per iteration). Because the rules
+              were written in XML, my coworker was able to use AI to port the engine
+              (originally written in Scala) into Rust. Additionally, he was able to
+              compile the Rust into WebAssembly so that we could run the engine in
+              the browser instead of the server. This resulted in a 155x speedup
+              compared to the JS engine, and a 3x speed up compared to the Scala
+              engine.
+            </p>
+            <p>
+              You cannot get much faster than writing the interpretation engine in
+              Rust, but there is one layer deeper that you can go if you want to
+              make the engine even faster. If you write a compiler for Fact Graph
+              using LLVM, you can compile the Fact Graph into native machine code.
+              Not only would you be running as close to the metal as you can get,
+              but LLVM has a built in optimizer. We actually tried to vibe code a
+              compiler, and the initial results looked promising (over 10,000x
+              speedup). However, after running the agent in a Ralph loop, I was
+              unable to get a fully working compiler that included things like
+              incomplete results. I want to come back to this eventually as a side
+              project where I take more time to fully understand LLVM, and have a
+              much cleaner understanding of what the code is doing.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/yaml.min.js"></script>
+    <script>hljs.highlightAll();</script>
+  </body>
+</html>

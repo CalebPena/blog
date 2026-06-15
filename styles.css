@@ -48,9 +48,7 @@ a {
 .section {
   position: relative;
   padding: clamp(4rem, 8vw, 7.5rem) clamp(1rem, 5vw, 4rem);
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, var(--glow)), transparent 24rem),
-    linear-gradient(180deg, var(--start), var(--end));
+  background: linear-gradient(180deg, var(--start), var(--end));
 }
 
 .section-0 {
@@ -133,6 +131,9 @@ a {
   display: grid;
   align-content: end;
   gap: 1.4rem;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, var(--glow)), transparent 24rem),
+    linear-gradient(180deg, var(--start), var(--end));
 }
 
 .hero > * {
@@ -147,7 +148,7 @@ a {
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.16em;
-  text-transform: uppercase;
+  text-transform: capitalize;
 }
 
 h1,
