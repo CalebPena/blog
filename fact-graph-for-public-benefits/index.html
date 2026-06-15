@@ -12,6 +12,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css"
     />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="../styles.css" />
   </head>
   <body>
@@ -77,8 +78,11 @@
               dependencies, and their dependencies' dependencies. Below is an
               implementation of SNAP with all of its writable and derived facts.
             </p>
-            <figure class="image-placeholder">
-              <div>Image coming soon</div>
+            <figure class="article-image">
+              <img
+                src="../assets/full-snap-fact-graph.png"
+                alt="A full SNAP Fact Graph visualization with many dependency nodes and edges."
+              />
               <figcaption>Full SNAP fact graph visualization.</figcaption>
             </figure>
             <p>
@@ -91,8 +95,11 @@
               looks when you focus in on just one part of the graph, in this case
               the allotment:
             </p>
-            <figure class="image-placeholder">
-              <div>Image coming soon</div>
+            <figure class="article-image">
+              <img
+                src="../assets/allotment-focused-graph.png"
+                alt="A focused Fact Graph view showing the allotment fact and its dependencies with live values."
+              />
               <figcaption>Focused allotment graph with live values.</figcaption>
             </figure>
             <p>
@@ -137,8 +144,11 @@
               directly to individual facts. Here is an example of the sources for
               the allotment fact shown above.
             </p>
-            <figure class="image-placeholder">
-              <div>Image coming soon</div>
+            <figure class="article-image">
+              <img
+                src="../assets/allotment-policy-sources.png"
+                alt="Policy source cards for the allotment fact, showing linked Colorado SNAP rule excerpts."
+              />
               <figcaption>Policy source cards linked to the allotment fact.</figcaption>
             </figure>
             <p>
@@ -151,6 +161,13 @@
               where a certain policy is implemented in the graph, you can start with
               the policy and see what facts reference it.
             </p>
+            <figure class="article-image wide-image">
+              <img
+                src="../assets/policy-linking-split-view.png"
+                alt="A split view showing allotment policy sources next to the source policy document with related facts linked."
+              />
+              <figcaption>Split view showing a policy source linked back to facts in the graph.</figcaption>
+            </figure>
             <p>
               One caveat is that oftentimes linking up all the documentation like
               this takes a lot of time and effort. However, with AI it was easy to
@@ -758,10 +775,48 @@ or resourcesWithinLimit</code></pre>
         </div>
       </section>
     </main>
+    <dialog class="image-modal" aria-label="Expanded image">
+      <button class="modal-close" type="button" aria-label="Close image">Close</button>
+      <img alt="" />
+    </dialog>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/yaml.min.js"></script>
-    <script>hljs.highlightAll();</script>
+    <script>
+      hljs.highlightAll();
+
+      const imageModal = document.querySelector(".image-modal");
+      const modalImage = imageModal.querySelector("img");
+      const modalClose = imageModal.querySelector(".modal-close");
+
+      document.querySelectorAll(".article-image img").forEach((image) => {
+        image.tabIndex = 0;
+        image.setAttribute("role", "button");
+        image.setAttribute("aria-label", `${image.alt}. Open full screen image.`);
+
+        const openImage = () => {
+          modalImage.src = image.src;
+          modalImage.alt = image.alt;
+          imageModal.showModal();
+          modalClose.focus();
+        };
+
+        image.addEventListener("click", openImage);
+        image.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openImage();
+          }
+        });
+      });
+
+      modalClose.addEventListener("click", () => imageModal.close());
+      imageModal.addEventListener("click", (event) => {
+        if (event.target === imageModal) {
+          imageModal.close();
+        }
+      });
+    </script>
   </body>
 </html>

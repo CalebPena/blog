@@ -296,7 +296,8 @@ blockquote {
   line-height: 1.35;
 }
 
-.image-placeholder {
+.image-placeholder,
+.article-image {
   border: 1px solid var(--line);
   border-radius: 1.2rem;
   overflow: hidden;
@@ -304,6 +305,20 @@ blockquote {
     linear-gradient(135deg, rgba(155, 239, 193, 0.2), rgba(241, 203, 114, 0.12)),
     rgba(0, 0, 0, 0.22);
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.2);
+}
+
+.article-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  cursor: zoom-in;
+}
+
+.article-image img:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
 }
 
 .image-placeholder div {
@@ -317,10 +332,54 @@ blockquote {
   text-transform: uppercase;
 }
 
-.image-placeholder figcaption {
+.image-placeholder figcaption,
+.article-image figcaption {
   padding: 0.85rem 1rem;
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.image-modal {
+  width: min(96vw, 1400px);
+  max-width: none;
+  max-height: 94vh;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 3.25rem 1rem 1rem;
+  background: rgba(3, 4, 7, 0.96);
+  box-shadow: 0 30px 120px rgba(0, 0, 0, 0.75);
+}
+
+.image-modal::backdrop {
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.image-modal img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: calc(94vh - 4.5rem);
+  margin: 0 auto;
+  object-fit: contain;
+  background: white;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 @media (max-width: 760px) {
