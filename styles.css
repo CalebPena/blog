@@ -69,39 +69,69 @@ a {
 
 .section-2 {
   --start: #b3a783;
-  --end: #756a4e;
+  --end: #8f835f;
   --glow: 0.12;
   color: #fff8e8;
 }
 
 .section-3 {
-  --start: #756a4e;
-  --end: #40382f;
+  --start: #8f835f;
+  --end: #6f654c;
   --glow: 0.1;
 }
 
 .section-4 {
-  --start: #40382f;
-  --end: #25252b;
+  --start: #6f654c;
+  --end: #50483c;
   --glow: 0.08;
 }
 
 .section-5 {
-  --start: #25252b;
-  --end: #151923;
+  --start: #50483c;
+  --end: #383532;
   --glow: 0.07;
 }
 
 .section-6 {
-  --start: #151923;
-  --end: #0b0d13;
+  --start: #383532;
+  --end: #292b31;
   --glow: 0.06;
 }
 
 .section-7 {
-  --start: #0b0d13;
-  --end: #030407;
+  --start: #292b31;
+  --end: #20242d;
   --glow: 0.05;
+}
+
+.section-8 {
+  --start: #20242d;
+  --end: #181d28;
+  --glow: 0.045;
+}
+
+.section-9 {
+  --start: #181d28;
+  --end: #111722;
+  --glow: 0.04;
+}
+
+.section-10 {
+  --start: #111722;
+  --end: #0c1019;
+  --glow: 0.035;
+}
+
+.section-11 {
+  --start: #0c1019;
+  --end: #070a11;
+  --glow: 0.03;
+}
+
+.section-12 {
+  --start: #070a11;
+  --end: #030407;
+  --glow: 0.025;
 }
 
 .hero {
