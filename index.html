@@ -18,17 +18,17 @@
     <header class="hero section section-0">
       <h1>Coming soon</h1>
       <nav class="toc" aria-label="Article sections">
-        <a href="#visualization">Visualization</a>
+        <a href="#intro">Intro</a>
+        <a href="#scoped-rules">Scoped rules</a>
         <a href="#policy-linking">Policy linking</a>
         <a href="#xml">XML</a>
-        <a href="#integrated-frontend">Integrated frontend</a>
+        <a href="#missing-inputs">Missing inputs</a>
         <a href="#periods">Periods</a>
-        <a href="#aliases">Aliases</a>
+        <a href="#collections">Collections</a>
         <a href="#plugins">Plugins</a>
-        <a href="#new-scope-capabilities">New scope capabilities</a>
+        <a href="#dependency-scope">dependency scope</a>
         <a href="#circular-logic">Circular logic</a>
-        <a href="#rust-implementation">Rust implementation</a>
-        <a href="#compiler">Compiler</a>
+        <a href="#new-engine">new engine</a>
       </nav>
     </header>
 
@@ -60,9 +60,9 @@
         </div>
       </section>
 
-      <section class="section section-2 article-block" id="visualization">
+      <section class="section section-2 article-block" id="scoped-rules">
         <div class="content-grid">
-          <aside class="section-label">Visualization</aside>
+          <aside class="section-label">Scoped rules</aside>
           <article>
             <p>
               The core concept of Fact Graph is that there are facts that each
@@ -272,9 +272,9 @@
         </div>
       </section>
 
-      <section class="section section-5 article-block" id="integrated-frontend">
+      <section class="section section-5 article-block" id="missing-inputs">
         <div class="content-grid">
-          <aside class="section-label">Integrated frontend</aside>
+          <aside class="section-label">Missing inputs</aside>
           <article>
             <p>
               My SNAP implementation has 159 inputs (Direct File has 602 inputs)
@@ -377,9 +377,9 @@
         </div>
       </section>
 
-      <section class="section section-7 article-block" id="aliases">
+      <section class="section section-7 article-block" id="collections">
         <div class="content-grid">
-          <aside class="section-label">Aliases</aside>
+          <aside class="section-label">Collections</aside>
           <article>
             <p>
               Most rules engines need to support the concept of a list. Whether it
@@ -565,9 +565,9 @@ or resourcesWithinLimit</code></pre>
         </div>
       </section>
 
-      <section class="section section-9 article-block" id="new-scope-capabilities">
+      <section class="section section-9 article-block" id="dependency-scope">
         <div class="content-grid">
-          <aside class="section-label">New scope capabilities</aside>
+          <aside class="section-label">dependency scope</aside>
           <article>
             <p>
               The following 2 sections are changes that we had to make to the Fact
@@ -721,9 +721,9 @@ or resourcesWithinLimit</code></pre>
         </div>
       </section>
 
-      <section class="section section-11 article-block" id="rust-implementation">
+      <section class="section section-11 article-block" id="new-engine">
         <div class="content-grid">
-          <aside class="section-label">Rust implementation</aside>
+          <aside class="section-label">new engine</aside>
           <article>
             <p>
               The existing Fact Graph engine is written in Scala, and it uses a
@@ -740,14 +740,6 @@ or resourcesWithinLimit</code></pre>
               compared to the JS engine, and a 3x speed up compared to the Scala
               engine.
             </p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section section-12 article-block" id="compiler">
-        <div class="content-grid">
-          <aside class="section-label">Compiler</aside>
-          <article>
             <p>
               You cannot get much faster than writing the interpretation engine in
               Rust, but there is one layer deeper that you can go if you want to

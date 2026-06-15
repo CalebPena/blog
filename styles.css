@@ -124,14 +124,8 @@ a {
 
 .section-11 {
   --start: #0c1019;
-  --end: #070a11;
-  --glow: 0.03;
-}
-
-.section-12 {
-  --start: #070a11;
   --end: #030407;
-  --glow: 0.025;
+  --glow: 0.03;
 }
 
 .hero {
