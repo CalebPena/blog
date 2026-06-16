@@ -41,17 +41,24 @@
             <p>
               Over the past 6 months, my team and I have been exploring rules
               engines in the context of determining eligibility for public benefits
-              like SNAP, Medicaid, and WIC.
-              Our goal was to make rules as maintainable as possible. To achieve
+              like SNAP, Medicaid, and WIC. Our goal was to make rules as
+              maintainable as possible. To achieve
               this we built a
               <a href="https://github.com/Gary-Community-Ventures/rules-visualizer" target="_blank" rel="noopener noreferrer">visualizer</a>
-              that allows you to see how all the rules interact with each other. I have previous experience with
-              PolicyEngine (a fork of OpenFisca). We also explored DMN, but we
-              eventually settled on building a prototype in Fact Graph.
+              that allows you to see how all the rules interact with each other. This
+              eventually resulted in us encoding all the SNAP rules from
+              <a href="https://www.sos.state.co.us/CCR/GenerateRulePdf.do?ruleVersionId=10492" target="_blank" rel="noopener noreferrer">this manual</a>.
             </p>
             <p>
-              Fact Graph was developed by the IRS as part of Direct File. While
-              using Direct File I fell in love with some features, added some
+              I have previous experience with
+              <a href="https://www.policyengine.org/us" target="_blank" rel="noopener noreferrer">PolicyEngine</a>
+              (a fork of
+              <a href="https://openfisca.org/en/" target="_blank" rel="noopener noreferrer">OpenFisca</a>).
+              We also explored DMN, but we eventually settled on building a prototype
+              in <a href="https://github.com/IRS-Public/fact-graph" target="_blank" rel="noopener noreferrer">Fact Graph</a>.
+              Fact Graph was developed by the IRS as part of
+              <a href="https://github.com/IRS-Public/direct-file" target="_blank" rel="noopener noreferrer">Direct File</a>.
+              While using Direct File I fell in love with some features, added some
               features, and had ideas for features. This blog is a list of what
               those features are, as well as some opinions about them. The features
               are ordered in such a way that the features where you need to know the
@@ -141,9 +148,9 @@
               that supported an edge case and your engine has a critical bug.
             </p>
             <p>
-              For our rules visualizer, we created a way for policy to be linked
-              directly to individual facts. Here is an example of the sources for
-              the allotment fact shown above.
+              We created a way for policy to be linked directly to individual facts
+              in our visualizer. Here is an example of the sources for the allotment
+              fact shown above:
             </p>
             <figure class="article-image">
               <img
@@ -600,17 +607,21 @@ or resourcesWithinLimit</code></pre>
               SNAP graph (we were trying to run a simulation with a couple thousand
               scenarios and it was taking seconds per iteration). Because the rules
               were written in XML, my coworker was able to use AI to port the engine
-              (originally written in Scala) into Rust. Additionally, he was able to
-              compile the Rust into WebAssembly so that we could run the engine in
-              the browser instead of the server. This resulted in a 155x speedup
-              compared to the JS engine, and a 3x speed up compared to the Scala
-              engine.
+              (originally written in Scala) into Rust. Additionally, he compiled the
+              Rust into <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly</a>
+              so that we could run it on our Node backend. Another speed improvement
+              we could make could be to run the WebAssembly
+              on the browser to prevent making calls to the server (especially given
+              that we are currently running on the cheapest Heroku instance). This
+              resulted in a 155x speedup compared to the JS engine, and a 3x speed up
+              compared to the Scala engine.
             </p>
             <p>
               You cannot get much faster than writing the interpretation engine in
               Rust, but there is one layer deeper that you can go if you want to
               make the engine even faster. If you write a compiler for Fact Graph
-              using LLVM, you can compile the Fact Graph into native machine code.
+              using <a href="https://llvm.org/" target="_blank" rel="noopener noreferrer">LLVM</a>,
+              you can compile the Fact Graph into native machine code.
               Not only would you be running as close to the metal as you can get,
               but LLVM has a built in optimizer. We actually tried to vibe code a
               compiler, and the initial results looked promising (over 10,000x
