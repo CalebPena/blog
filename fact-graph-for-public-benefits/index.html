@@ -43,8 +43,9 @@
               engines in the context of determining eligibility for public benefits
               like SNAP, Medicaid, and WIC.
               Our goal was to make rules as maintainable as possible. To achieve
-              this we built a visualizer that allows you to see how all the rules
-              interact with each other. I have previous experience with
+              this we built a
+              <a href="https://github.com/Gary-Community-Ventures/rules-visualizer" target="_blank" rel="noopener noreferrer">visualizer</a>
+              that allows you to see how all the rules interact with each other. I have previous experience with
               PolicyEngine (a fork of OpenFisca). We also explored DMN, but we
               eventually settled on building a prototype in Fact Graph.
             </p>
@@ -281,9 +282,12 @@
             </p>
             <p>
               If you are interested in learning more about the advantages of XML in
-              Fact Graph I would recommend reading <cite>XML is a Cheap DSL</cite>
+              Fact Graph I would recommend reading
+              <cite><a href="https://unplannedobsolescence.com/blog/xml-cheap-dsl/" target="_blank" rel="noopener noreferrer">XML is a Cheap DSL</a></cite>
               by Alexander Petros, and if you are interested in hearing more counter
-              points, you can check out the Reddit thread about that article.
+              points, you can check out this
+              <a href="https://www.reddit.com/r/programming/comments/1rtq2a1/xml_is_a_cheap_dsl/" target="_blank" rel="noopener noreferrer">Reddit thread</a>
+              about that article.
             </p>
           </article>
         </div>
@@ -372,8 +376,9 @@
               are going to be a lot of unnecessary <code>&lt;Switch&gt;</code>
               statements. Taking inspiration from OpenFisca, it would be convenient
               to have a method built into the standard to handle this more
-              gracefully. In Policy Engine here is the config file for the federal
-              poverty level, FPL, for one person.
+              gracefully. In Policy Engine here is the config file for the
+              <a href="https://www.healthcare.gov/glossary/federal-poverty-level-fpl/" target="_blank" rel="noopener noreferrer">federal poverty level (FPL)</a>
+              for one person.
             </p>
             <pre><code>first_person:
   CONTIGUOUS_US:
@@ -729,6 +734,10 @@ or resourcesWithinLimit</code></pre>
               as this item from the nested caregiver relationship filter (in order to
               find out if this child has any other parents).
             </p>
+            <p class="related-link">
+              Related diff:
+              <a href="https://github.com/Gary-Community-Ventures/irs-fact-graph/compare/upstream-main...feat/scope-changes" target="_blank" rel="noopener noreferrer">Scope changes</a>
+            </p>
           </article>
         </div>
       </section>
@@ -766,10 +775,16 @@ or resourcesWithinLimit</code></pre>
               household either by being the head of household, or being related
               through some chain to the head of household (I came up with this idea
               in the shower. If you are interested in the history of showers and
-              Fact Graph check out Alex Mark's substack article). Even though Fact
+              Fact Graph check out
+              <a href="https://open.substack.com/pub/alexthemark/p/direct-file-is-open-source?selection=fc6afe2c-e6dc-4aa3-a280-5e29b65cc393&amp;utm_campaign=post-share-selection&amp;utm_medium=web&amp;aspectRatio=instagram&amp;textColor=%23ffffff&amp;bgImage=true" target="_blank" rel="noopener noreferrer">Alex Mark's substack article</a>).
+              Even though Fact
               Graph can theoretically handle this, we had to make some changes to
               the engine around static type checking, and the actual runtime to get
               this fully working.
+            </p>
+            <p class="related-link">
+              Related diff:
+              <a href="https://github.com/Gary-Community-Ventures/irs-fact-graph/compare/e1ec132244d14356e1332589c20510dc9ff37e1d...cefdf8a" target="_blank" rel="noopener noreferrer">Recursive dependency changes</a>
             </p>
           </article>
         </div>
