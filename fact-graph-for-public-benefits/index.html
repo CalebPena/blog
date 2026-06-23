@@ -40,9 +40,11 @@
           <article>
             <p>
               Over the past 6 months, my team and I have been exploring rules
-              engines in the context of determining eligibility for public benefits
-              like SNAP, Medicaid, and WIC. Our goal was to make rules as
-              maintainable as possible. To achieve
+              engines in the context of eligibility determination for public benefits
+              such as Supplemental Nutrition Assistance Program (SNAP), Medicaid, and
+              the Special Supplemental Nutrition Program for Women, Infants, and
+              Children (WIC). Our goal was to make rules as maintainable, traceable,
+              and transparent as possible. To achieve
               this we built a
               <a href="https://github.com/Gary-Community-Ventures/rules-visualizer" target="_blank" rel="noopener noreferrer">visualizer</a>
               that allows you to see how all the rules interact with each other and
@@ -56,14 +58,20 @@
               <a href="https://openfisca.org/en/" target="_blank" rel="noopener noreferrer">OpenFisca</a>).
               We also explored DMN, but we eventually settled on building a prototype
               in <a href="https://github.com/IRS-Public/fact-graph" target="_blank" rel="noopener noreferrer">Fact Graph</a>.
+            </p>
+            <p>
               Fact Graph was developed by the IRS as part of
               <a href="https://github.com/IRS-Public/direct-file" target="_blank" rel="noopener noreferrer">Direct File</a>.
-              While using Direct File I fell in love with some features, added some
-              features, and had ideas for features. This blog is a list of what
-              those features are, as well as some opinions about them. The features
-              are ordered in such a way that the features where you need to know the
-              least about Fact Graph are at the top, and as you go down the features
-              get more in the weeds.
+              While using Direct File, I fell in love with some of the existing
+              features, added new features, and had ideas for new features that we
+              did not have time to test.
+            </p>
+            <p>
+              This blog post contains a list of what those
+              features are, as well as my opinions about them. The features are
+              ordered in such a way that the features where you need to know the least
+              about Fact Graph are at the top, and as you go down the features get
+              more in the weeds.
             </p>
           </article>
         </div>
@@ -74,12 +82,12 @@
           <aside class="section-label">Scoped rules</aside>
           <article>
             <p>
-              The core concept of Fact Graph is that there are facts that each
-              represent a part of a calculation. There are writable facts and there
-              are derived facts. Writable facts are inputs provided by the user.
-              Derived facts take other facts (both writable and derived) and produce
-              a new value. Each derived fact has its own logic that it uses to
-              calculate its own value.
+              The core concept of Fact Graph is the fact. A fact is a typed value in
+              the graph, such as an amount, date, boolean, or collection, that can be
+              referenced by other facts. Facts can be writable or derived. Writable
+              facts are inputs provided by the user. Derived facts use other facts,
+              whether writable or derived, to calculate a new value. Each derived
+              fact defines the logic used to calculate its value.
             </p>
             <p>
               These facts create a tree where you can see each fact, their
@@ -94,14 +102,15 @@
               <figcaption>Full SNAP fact graph visualization.</figcaption>
             </figure>
             <p>
-              As you can see rules can get pretty complicated (The Direct File graph
-              takes up 3 additional screen lengths on my computer to get to the
-              bottom. When we first tried to load it we had to make performance
-              improvements to the graph to make it interactable). Breaking the engine
-              into facts makes the engine easier to understand because you can focus
-              on one part of the calculation. The image below shows how the graph
-              looks when you focus in on just one part of the graph, in this case
-              the allotment:
+              As you can see, rules can get pretty complicated; this full
+              implementation contains 159 inputs and 319 derived facts. The Direct
+              File graph takes up 3 additional screen lengths on my computer to get
+              to the bottom. When we first tried to load it, we had to make
+              performance improvements to the graph to make it interactable. Breaking
+              the engine into facts makes the engine easier to understand because you
+              can focus on one part of the calculation. The image below shows how the
+              graph looks when you focus in on just one particular piece of the graph,
+              in this case the allotment:
             </p>
             <figure class="article-image">
               <img
@@ -111,23 +120,22 @@
               <figcaption>Focused allotment graph with live values.</figcaption>
             </figure>
             <p>
-              In the example above, it begins to get easier to reason about how
-              "allotment" (how much a household gets per month in SNAP benefits) is
-              calculated. You can know that "allotment" uses the "eligibility category",
-              "unfloored allotment", which itself is calculated using the "max allotment"
-              and "expected contribution", as well as the "household size" and "minimum
-              allotment".
+              In the example above, it is now easier to understand how "allotment"
+              (how much a household gets per month in SNAP benefits) is calculated.
+              You can see that "allotment" is calculated using the "eligibility
+              category", "unfloored allotment" (which itself is calculated using the
+              "max allotment" and "expected contribution"), as well as the
+              "household size" and "minimum allotment".
             </p>
             <p>
-              Another feature of our visualizer is that you can enter values for
-              individual facts and see how the rules would use those values in real
-              time (the values in green). For example, someone who is familiar with
+              The visualizer also allows you to enter values for individual facts and
+              see how the rules would use those values in real time (the values in
+              green). For example, someone who is familiar with
               the SNAP policy could easily check that the "allotment" for a household
               is $245 given that the household qualifies under expanded categorical
               eligibility, with a "household size" of 2, and an "expected contribution"
               of $300. So instead of having to create a whole profile that generates
-              these criteria (our SNAP implementation has 159 inputs), a
-              tester/engineer could provide just the inputs that they need to test
+              these criteria, a tester/engineer could provide just the inputs that they need to test
               the piece of the graph that they are validating.
             </p>
 
@@ -140,12 +148,13 @@
           <aside class="section-label">Policy linking</aside>
           <article>
             <p>
-              A problem with maintaining large rulesets over time is that you often
-              forget why things were implemented the way that they were. In the best
-              case scenario, you need to go through your previous development
-              tickets to find out why something was implemented the way that it was,
-              wasting time and energy. In the worst case you remove important code
-              that supported an edge case and your engine has a critical bug.
+              A problem with maintaining large rulesets over time is that you can
+              often forget why things were implemented the way that they were. In the
+              best case scenario, you need to go through your previous development
+              tickets to find out why something was implemented a certain way,
+              wasting time and energy, and in the worst case, you remove important
+              code that supported an edge case, leaving your engine with a critical
+              bug.
             </p>
             <p>
               We created a way for policy to be linked directly to individual facts
@@ -160,9 +169,9 @@
               <figcaption>Policy source cards linked to the allotment fact.</figcaption>
             </figure>
             <p>
-              Having the sources attached directly to the policy allows both
-              engineers and testers to understand how facts are supposed to work,
-              often in a more readable way than the code alone. The sources also
+              Having the source material attached directly allows both engineers and
+              testers to understand how facts are supposed to work (often in a more
+              readable way than the code alone). The sources also
               link back to the policy (button on the top right of the source cards)
               so that you can see how the source interacts with the rest of the
               policy. This also allows you to go in reverse where if you want to see
@@ -177,16 +186,16 @@
               <figcaption>Split view showing a policy source linked back to facts in the graph.</figcaption>
             </figure>
             <p>
-              One caveat is that oftentimes linking up all the documentation like
-              this takes a lot of time and effort. However, with AI it was easy to
+              One caveat: linking up all the documentation like this can take a lot
+              of time and effort. However, with AI it was easy to
               link the documentation as I built the graph by providing the AI with
               the source (I had a shortcut to spawn AI agents with the attached
               source in the rules visualizer UI), and having it implement the rules
-              from the source (I oftentimes could just attach the source with a
-              message as simple as "add"). This not only resulted in all the sources
+              from the source. Oftentimes, I could just attach the source with a
+              message as simple as "add". This not only resulted in all the sources
               being attached to their relevant facts, but it often made development
-              easier because the AI already had the context about what I was trying
-              to add.
+              easier since the AI already had the context about what I was trying to
+              add.
             </p>
           </article>
         </div>
@@ -198,7 +207,7 @@
           <article>
             <p>
               Fact Graph uses a custom language that you write in XML to configure
-              and run a given rule set. Like everyone I was initially skeptical
+              and run a given rule set. Like most people, I was initially skeptical
               about writing what is essentially code in XML. Here is an example
               from the allotment fact that we have been using.
             </p>
@@ -257,11 +266,14 @@
 )</code></pre>
             <p>
               It looks a lot cleaner until you try to figure out which value
-              belongs to which condition. Additionally there is a confusing mix of
+              belongs to which condition. Additionally, there is a confusing mix of
               functions (like <code>floor()</code> and <code>max()</code>), words
               (<code>if</code> and <code>else</code>), and symbols (<code>==</code>
               and <code>&lt;=</code>) which could confuse someone who is not familiar
-              with Python. In XML however, everything works the same way. To floor a
+              with Python.
+            </p>
+            <p>
+              In XML however, everything works the same way. To floor a
               value you use <code>&lt;Floor&gt;</code>, which is the same syntax as if you
               want to check if one value is less than or equal to another where you
               would use <code>&lt;LessThanOrEqual&gt;</code> (with the exception being when
@@ -270,12 +282,12 @@
             </p>
             <p>
               Even so, I still would prefer to write in a Python-like syntax (for
-              example FEEL from DMN). I don't want to have to type
+              example the FEEL programming language used in DMN). I don't want to have to type
               <code>&lt;Add&gt;&lt;/Add&gt;</code> instead of <code>+</code> every time I need
               to add something. I also don't think that it makes that much of a
               difference in a less-technical user's ability to read and understand
-              it. However, there are two things working in XML's favor that would
-              make it so that I would not change it.
+              it. However, there are two things working in XML's favor that prevent
+              me from wanting to change it.
             </p>
             <p>
               First, I didn't have to type out any XML because AI did all the work.
@@ -283,8 +295,8 @@
               For example it was really easy to get all of the dependencies of each
               fact, something that would be nearly impossible with a programming
               language like Python (I did have some success with getting dependencies
-              at runtime with OpenFisca), and it would take a lot more work to parse
-              out for a FEEL-like syntax. I also like that there is really only one
+              at runtime with OpenFisca), and would take a lot more work to parse
+              out for a FEEL like syntax. I also like that there is really only one
               way to do anything, which would not be true if you didn't use a DSL.
             </p>
             <p>
@@ -294,7 +306,7 @@
               by Alexander Petros, and if you are interested in hearing more counter
               points, you can check out this
               <a href="https://www.reddit.com/r/programming/comments/1rtq2a1/xml_is_a_cheap_dsl/" target="_blank" rel="noopener noreferrer">Reddit thread</a>
-              about that article.
+              in response to that article.
             </p>
           </article>
         </div>
@@ -310,15 +322,15 @@
               birthday" (used for work requirements) and "sponsor household size" (used
               to determine the amount of income from a sponsor that gets applied to
               the household). On top of that, some of the inputs need to be input per
-              member (75 inputs), income (12), or expense (14) (Direct File has 127 inputs for each W2, 58
-              for each household member, and 422 total across its various other
-              collections).
+              member (75 member inputs). For example, you need to provide "age" for
+              every member of the household. This problem also exists for other
+              collections like income and expenses.
             </p>
             <p>
               It would be a pretty miserable experience to have to input every
               single one of those inputs every single time you filled out a SNAP
-              application. The solution is to not ask questions that you do not need
-              to ask. For example, you do not need to ask a user for their sponsor
+              application. The solution is to not ask questions that you don't need
+              to ask. For example, you don't need to ask a user for their
               "sponsor household size" if they are a US citizen. Traditionally, you would have
               to hard code each of these cases into the form flow, but that is still
               a lot of work to add each of the branches given the amount of inputs.
@@ -338,10 +350,7 @@
               person with disability" fact is false. Therefore we do not need to ask
               any of the questions that are used by "is person with disability"
               (unless those inputs are used elsewhere). There are similar tricks that
-              you can do with <code>&lt;All&gt;</code> and <code>&lt;Switch&gt;</code>.
-            </p>
-            <p>
-              This could theoretically be used to generate a question flow all by
+              you can do with <code>&lt;All&gt;</code> and <code>&lt;Switch&gt;</code>. This could theoretically be used to generate a question flow all by
               itself by checking the conditions in order (ask for the inputs for
               "is elderly" before "is person with disability"). One issue with this
               is that the question flow becomes tightly coupled to the order that
@@ -350,10 +359,16 @@
               get asked first). Another issue is that you lose control of which
               inputs are next to each other (you probably want to ask about a user's
               age, and if they are pregnant close to each other, but they could end
-              up being asked at completely different parts of the flow. To get around
-              this you still need to hard code a flow, but that flow can be informed
-              by the intermediate values of the graph (for example skipping the
-              disability questions if the engine says that it is not required).
+              up being asked at completely different parts of the flow). To get around
+              this you can flip this concept on its head. Instead of asking the rules
+              engine "what inputs are required", you can ask the engine "what inputs
+              are not required". So you have a hard coded order of the questions, but
+              as you answer them, some questions will get removed if it is determined
+              that they are not needed any more. In the example above that would look
+              like initially "is elderly" and "is person with disability" would be
+              showing, but if you clicked yes to one of them, the other would be
+              removed, or there would be some other indication that it is no longer
+              needed, assuming that neither of these inputs is used elsewhere.
             </p>
           </article>
         </div>
@@ -421,11 +436,11 @@
               anyone who is "elderly or disabled".
             </blockquote>
             <p>
-              To model this you need 2 new nodes. You could do this as one, but for
+              To model this you need 2 new facts. You could do this as one, but for
               the sake of simplicity I did not want to come up with a scenario where
-              you would need to split this into 2 parts. You need a node that checks
-              if each member is "elderly or disabled", and you need a node that uses
-              the new "is elderly or disabled" node and checks if any of them are true.
+              you would need to split this into 2 parts. You need a fact that checks
+              if each member is "elderly or disabled", and you need a fact that uses
+              the new "is elderly or disabled" fact and checks if any of them are true.
               When implementing this in DMN it would look something like this.
             </p>
             <pre><code>// Decision: elderlyOrDisabledMembers
@@ -605,8 +620,10 @@ or resourcesWithinLimit</code></pre>
               interpreter in another, faster language. We did run into an issue where
               the transpiled JS from the original Scala engine was too slow for our
               SNAP graph (we were trying to run a simulation with a couple thousand
-              scenarios and it was taking seconds per iteration). Because the rules
-              were written in XML, my coworker was able to use AI to port the engine
+              scenarios and it was taking seconds per iteration).
+            </p>
+            <p>
+              Because the rules were written in XML, my coworker was able to use AI to port the engine
               (originally written in Scala) into Rust. Additionally, he compiled the
               Rust into <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly</a>
               so that we could run it on our Node backend. Another speed improvement
@@ -695,14 +712,17 @@ or resourcesWithinLimit</code></pre>
   &lt;/Left&gt;
   &lt;Right&gt;&lt;Int&gt;0&lt;/Int&gt;&lt;/Right&gt;
 &lt;/GreaterThan&gt;</code></pre>
-            <p>
-              The way that these collections are set up is that we have members who
-              have "age" and "is part of household" fields. We also have a collection of
-              "caregiver relationships" which have "caregiver id", "child id", and "is
-              parent" fields. "Caregiver id" is an id to a member. "Child id" is also an
-              id to a member. "Is parent" says whether the caregiver is a parent to
-              the child.
-            </p>
+            <p>The way that these collections are set up is that we have members who have the following fields:</p>
+            <ul>
+              <li>"Age"</li>
+              <li>"Is part of household"</li>
+            </ul>
+            <p>We also have a collection of caregiver relationships which have the following fields:</p>
+            <ul>
+              <li>"Caregiver id" (an id to a member)</li>
+              <li>"Child id" (also an id to a member)</li>
+              <li>"Is parent" (whether the caregiver is a parent to the child)</li>
+            </ul>
             <p>We filter the caregiver relationships to determine if there is one caregiver who meets the following criteria for every household member:</p>
             <ul>
               <li>The "caregiver id" needs to match the "member id".</li>
@@ -711,7 +731,7 @@ or resourcesWithinLimit</code></pre>
               <li>There can be no one else in the household who is also a parent of this child (completed using another filter).</li>
             </ul>
             <p>
-              The way that filters worked previously made it impossible to answer
+              The way that filters work previously made it impossible to answer
               the first condition. When you are inside a filter the way the paths
               resolve changes so that relative paths resolve to the scope of the
               collection item that you are filtering. For example when you call
@@ -759,14 +779,22 @@ or resourcesWithinLimit</code></pre>
           <article>
             <p>
               The SNAP rules determine if a member is required included in the
-              household as follows: parents of children under the age of 21 (who also
-              live together) must be in the same household, and spouses must be in
-              the same household.
+              household as follows:
             </p>
+            <ul>
+              <li>Parents of children under the age of 21 (who also live together) must be in the same household.</li>
+              <li>Spouses must be in the same household.</li>
+            </ul>
             <p>
-              Imagine you have a household with the following members Adam, Ben, and
-              Chloe. Adam is the father of Ben who is 20 years old. Ben and Chloe
-              are married. If Adam applies for SNAP, Ben is required to be in the
+              Imagine you have a household with the following members: Adam, Ben, and
+              Chloe.
+            </p>
+            <ul>
+              <li>Adam is the father of Ben who is 20 years old.</li>
+              <li>Ben and Chloe are married.</li>
+            </ul>
+            <p>
+              If Adam applies for SNAP, Ben is required to be in the
               same household as Adam because Adam is Ben's father, and Chloe is
               required to be in the same household as Ben because Chloe is the spouse
               of Ben. There is a recursive logic where you being in the household
@@ -775,19 +803,23 @@ or resourcesWithinLimit</code></pre>
             </p>
             <p>
               At first this seems like an impossible thing to accomplish in Fact
-              Graph because if nodes depend on themselves (in this case the being in
+              Graph because if facts depend on themselves (in this case the being in
               the household depending on being in the household) they will create a
               circular loop that will never resolve. However, there is one feature of
-              Fact Graph that makes this not completely impossible. Because Fact
-              Graph works by evaluating one member at a time (as opposed to running
+              Fact Graph that makes this not completely impossible.
+            </p>
+            <p>
+              Because Fact Graph works by evaluating one member at a time (as opposed to running
               them all at once like in OpenFisca), we can wait to calculate if
               certain members are in the household until it can be determined if one
               the other members (like their parent, child, or spouse) is part of the
               household either by being the head of household, or being related
               through some chain to the head of household (I came up with this idea
-              in the shower. If you are interested in the history of showers and
-              Fact Graph check out
-              <a href="https://open.substack.com/pub/alexthemark/p/direct-file-is-open-source?selection=fc6afe2c-e6dc-4aa3-a280-5e29b65cc393&amp;utm_campaign=post-share-selection&amp;utm_medium=web&amp;aspectRatio=instagram&amp;textColor=%23ffffff&amp;bgImage=true" target="_blank" rel="noopener noreferrer">Alex Mark's substack article</a>).
+              in the shower).
+            </p>
+            <p>
+              If you are interested in the history of showers and Fact Graph check out
+              <a href="https://open.substack.com/pub/alexthemark/p/direct-file-is-open-source?selection=fc6afe2c-e6dc-4aa3-a280-5e29b65cc393&amp;utm_campaign=post-share-selection&amp;utm_medium=web&amp;aspectRatio=instagram&amp;textColor=%23ffffff&amp;bgImage=true" target="_blank" rel="noopener noreferrer">Alex Mark's substack article</a>.
               Even though Fact
               Graph can theoretically handle this, we had to make some changes to
               the engine around static type checking, and the actual runtime to get
